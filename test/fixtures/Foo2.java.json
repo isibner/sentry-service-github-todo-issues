@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Stop forgetting the syntax I implement.",
+    "labels": ["todo", "stupid"],
+    "body": "Honestly, it's pathetic that I can't even remember my own syntax. Like, c'mon, I ought to be better than this."
+  },
+  {
+    "title": "test out block syntax",
+    "labels": ["todo"],
+    "body": "This should work in the new world! Exciting!"
+  }
+]
