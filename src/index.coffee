@@ -37,7 +37,7 @@ class GithubIssuesTodoService
 
   activateServiceForRepo: ({repoModel}, callback) ->
     {repoId, userId, sourceName} = repoModel
-    @GithubTodoIssuesModel.findOrCreate {repoId, userId, sourceName}, (err, model, created) =>
+    @GithubTodoIssuesModel.findOrCreate {repoId, userId, sourceName}, (err, model, created) ->
       return callback(err) if err
       successMessage = "Todo issue tracking activated!"
       if not created
@@ -56,7 +56,7 @@ class GithubIssuesTodoService
       ((cb) => @GithubTodoIssuesModel.findOne {repoId, userId, sourceName}, cb)
       ((cb) -> todoUtils.parseTodos files, repoPath, cb)
       ((cb) -> child_process.exec 'git rev-parse HEAD', {cwd: repoPath}, cb)
-    ], (err, [model, mappedTodos, latestSha]) =>
+    ], (err, [model, mappedTodos, latestSha]) ->
       callback(err) if err?
       allTodos = _.flatten mappedTodos
       githubAPI = github.botAuth(BOT_USERNAME, BOT_PASSWORD, USER_AGENT)
@@ -80,7 +80,7 @@ class GithubIssuesTodoService
       ((cb) => @GithubTodoIssuesModel.findOne {repoId, userId, sourceName}, cb)
       ((cb) -> todoUtils.parseTodos files, repoPath, cb)
       ((cb) -> child_process.exec 'git rev-parse HEAD', {cwd: repoPath}, cb)
-    ], (err, [model, mappedTodos, latestSha]) =>
+    ], (err, [model, mappedTodos, latestSha]) ->
       callback(err) if err?
       allTodos = _.flatten mappedTodos
       githubAPI = github.botAuth(BOT_USERNAME, BOT_PASSWORD, USER_AGENT)
