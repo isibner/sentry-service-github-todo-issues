@@ -17,12 +17,12 @@ class GithubIssuesTodoService
   @AUTH_ENDPOINT: null
   @WORKS_WITH_SOURCES: ['github', 'github-private']
 
-  constructor: ({@config, @packages, @db, @sourceProviders}) ->
+  constructor: ({@config, @packages, @db, @sources}) ->
     {mongoose, 'mongoose-findorcreate': findOrCreate} = @packages
     GithubTodoIssuesSchema = new mongoose.Schema {
       repoId: {type: String, required: true},
       userId: {type: String, required: true},
-      sourceProviderName: {type: String, required: true},
+      sourceName: {type: String, required: true},
       todos: mongoose.Schema.Types.Mixed
     }
     GithubTodoIssuesSchema.plugin findOrCreate
@@ -35,9 +35,9 @@ class GithubIssuesTodoService
 
   initializeOtherEndpoints: (router) ->
 
-  activateServiceForRepo: (repoModel, callback) ->
-    {repoId, userId, sourceProviderName} = repoModel
-    @GithubTodoIssuesModel.findOrCreate {repoId, userId, sourceProviderName}, (err, model, created) =>
+  activateServiceForRepo: ({repoModel}, callback) ->
+    {repoId, userId, sourceName} = repoModel
+    @GithubTodoIssuesModel.findOrCreate {repoId, userId, sourceName}, (err, model, created) =>
       return callback(err) if err
       successMessage = "Todo issue tracking activated!"
       if not created
@@ -48,14 +48,14 @@ class GithubIssuesTodoService
       else
         callback(null, successMessage)
 
-  handleInitialRepoData: (repoModel, {files, tempPath}, callback) ->
-    {repoId, userId, sourceProviderName} = repoModel
-    sourceProvider = _.findWhere @sourceProviders, {NAME: sourceProviderName}
-    {BOT_USERNAME, BOT_PASSWORD, USER_AGENT} = sourceProvider.config
+  handleInitialRepoData: ({repoModel, files, repoPath, repoConfig}, callback) ->
+    {repoId, userId, sourceName} = repoModel
+    source = _.findWhere @sources, {NAME: sourceName}
+    {BOT_USERNAME, BOT_PASSWORD, USER_AGENT} = source.config
     async.parallel [
-      ((cb) => @GithubTodoIssuesModel.findOne {repoId, userId, sourceProviderName}, cb)
-      ((cb) -> todoUtils.parseTodos files, tempPath, cb)
-      ((cb) -> child_process.exec 'git rev-parse HEAD', {cwd: tempPath}, cb)
+      ((cb) => @GithubTodoIssuesModel.findOne {repoId, userId, sourceName}, cb)
+      ((cb) -> todoUtils.parseTodos files, repoPath, cb)
+      ((cb) -> child_process.exec 'git rev-parse HEAD', {cwd: repoPath}, cb)
     ], (err, [model, mappedTodos, latestSha]) =>
       callback(err) if err?
       allTodos = _.flatten mappedTodos
@@ -72,14 +72,14 @@ class GithubIssuesTodoService
         model.markModified 'todos'
         model.save(callback)
 
-  handleHookRepoData: (repoModel, {files, tempPath}, callback) ->
-    {repoId, userId, sourceProviderName} = repoModel
-    sourceProvider = _.findWhere @sourceProviders, {NAME: sourceProviderName}
-    {BOT_USERNAME, BOT_PASSWORD, USER_AGENT} = sourceProvider.config
+  handleHookRepoData: ({repoModel, files, repoPath, repoConfig}, callback) ->
+    {repoId, userId, sourceName} = repoModel
+    source = _.findWhere @sources, {NAME: sourceName}
+    {BOT_USERNAME, BOT_PASSWORD, USER_AGENT} = source.config
     async.parallel [
-      ((cb) => @GithubTodoIssuesModel.findOne {repoId, userId, sourceProviderName}, cb)
-      ((cb) -> todoUtils.parseTodos files, tempPath, cb)
-      ((cb) -> child_process.exec 'git rev-parse HEAD', {cwd: tempPath}, cb)
+      ((cb) => @GithubTodoIssuesModel.findOne {repoId, userId, sourceName}, cb)
+      ((cb) -> todoUtils.parseTodos files, repoPath, cb)
+      ((cb) -> child_process.exec 'git rev-parse HEAD', {cwd: repoPath}, cb)
     ], (err, [model, mappedTodos, latestSha]) =>
       callback(err) if err?
       allTodos = _.flatten mappedTodos
@@ -109,9 +109,9 @@ class GithubIssuesTodoService
         model.markModified 'todos'
         model.save(callback)
 
-  deactivateServiceForRepo: (repoModel, callback) ->
-    {repoId, userId, sourceProviderName} = repoModel
-    @GithubTodoIssuesModel.findOneAndRemove {repoId, userId, sourceProviderName}, (err) =>
+  deactivateServiceForRepo: ({repoModel}, callback) ->
+    {repoId, userId, sourceName} = repoModel
+    @GithubTodoIssuesModel.findOneAndRemove {repoId, userId, sourceName}, (err) =>
       return callback(err) if err
       callback(null, "#{@DISPLAY_NAME} removed successfully.")
 

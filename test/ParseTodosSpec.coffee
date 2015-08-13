@@ -28,9 +28,18 @@ describe 'todoUtils.parseTodos', ->
       checkTodosMatch(expected, flatTodos)
       done()
 
-it 'should parse Java with mixed comments', (done) ->
+  it 'should parse Java with mixed comments', (done) ->
     files = [path.join(fixturesDir, 'Foo2.java')]
     expected = JSON.parse fs.readFileSync(path.join(fixturesDir, 'Foo2.java.json'), 'utf8')
+    parseTodos files, fixturesDir, (err, todos) ->
+      done(err) if err?
+      flatTodos = _.flatten(todos)
+      checkTodosMatch(expected, flatTodos)
+      done()
+
+  it 'should parse Less with mixed comments', (done) ->
+    files = [path.join(fixturesDir, 'mixed-comments.less')]
+    expected = JSON.parse fs.readFileSync(path.join(fixturesDir, 'mixed-comments.less.json'), 'utf8')
     parseTodos files, fixturesDir, (err, todos) ->
       done(err) if err?
       flatTodos = _.flatten(todos)

@@ -14,9 +14,9 @@ defaultRegexes =
 
 fileRegexes = [
   {
-    todoRegex: /^[\+|\-]?[\s]*[\/\/|\*][\s]*TODO[\W|\s]*(?=\w+)/i,
-    labelRegex: /^\+?[\s]*[\/\/|\*][\s]*LABELS[\W|\s]*(?=\w+)/i,
-    bodyRegex: /^\+?[\s]*[\/\/|\*][\s]*(?=\w+)/i,
+    todoRegex: /^[\+|\-]?[\s]*(?:\/{2}|\*)[\s]*TODO[\W|\s]*(?=\w+)/i,
+    labelRegex: /^[\+|\-]?[\s]*(?:\/{2}|\*)[\s]*LABELS[\W|\s]*(?=\w+)/i,
+    bodyRegex: /^[\+|\-]?[\s]*(?:\/{2}|\*)[\s]*(?=\w+)/i,
     extensions: [ '.c', '.cpp', '.java', '.js', '.less', '.m', '.sass', '.scala', '.scss', '.swift']
   },
   {
@@ -83,8 +83,9 @@ parseTodos = (files, tempPath, callback) ->
     relativeFilename = path.relative(tempPath, filename)
     lines = _.map fs.readFileSync(filename, 'utf8').split('\n'), (line, lineNumFrom0) -> {line, lineNumFrom0}
     blameDataFromLines lines, tempPath, relativeFilename, (err, lineData) ->
+      parsingTodo = false
       cb(err) if err?
-      for datum in lineData
+      _.map lineData, (datum) ->
         {line, lineNumFrom0, committerName, commitSha} = datum
         if isTodo line, relativeFilename
           parsingTodo = true
