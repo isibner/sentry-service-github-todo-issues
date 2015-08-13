@@ -1,4 +1,7 @@
-{
-  "title": "abc123",
-  "labels": ["todo", "abc", "123", "test"]
-}
+[
+  {
+    "title": "abc123",
+    "labels": ["todo", "abc", "123", "test"],
+    "body": "body1 body2 bodybodybody"
+  }
+]

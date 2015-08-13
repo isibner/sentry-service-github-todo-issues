@@ -1,0 +1,20 @@
+[
+  {
+    "lineNum": 1,
+    "path": "some/made/up/path.less",
+    "shas": ["abc123abc123"],
+    "committers": ["Some Dude"],
+    "labels": ["todo"],
+    "body": "I'm a little teapot, short and stout.",
+    "title": "Teapot Todo"
+  },
+  {
+    "lineNum": 23,
+    "path": "some/other/path.less",
+    "shas": ["ffeeeffeee"],
+    "committers": ["Some Other Dude"],
+    "labels": ["todo"],
+    "body": "We forgot to add the handle and the spout",
+    "title": "Oh no!"
+  }
+]

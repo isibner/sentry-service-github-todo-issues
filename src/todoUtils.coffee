@@ -109,6 +109,7 @@ parseTodos = (files, tempPath, callback) ->
             todoLineBody = getTodoBody(line, relativeFilename)
             if todoLineBody?
               lastTodo.body += ' ' + getTodoBody(line, relativeFilename).trim()
+              lastTodo.body = lastTodo.body.trim()
               unless _.contains lastTodo.shas, commitSha
                 lastTodo.shas.push commitSha
                 lastTodo.committers.push committerName
@@ -119,14 +120,34 @@ parseTodos = (files, tempPath, callback) ->
   async.mapLimit textFiles, 10, mapIterator, callback
 
 getChangesFor = (originalTodos, newTodos) ->
+  originalTodos = _.sortByAll originalTodos, ['path', 'lineNum']
+  newTodos = _.sortByAll newTodos, ['path', 'lineNum']
   changed = []
   added = []
   deleted = []
-  for diffObject in diff(model.todos, allTodos)
-    {kind, path, lhs, rhs} = diffObject
+  for diffObject in diff(originalTodos, newTodos)
+    {kind, index, item, path:keyList, lhs, rhs} = diffObject
     switch kind
       when 'E'
-        # TODO I need to use TDD on this
+        # keyList should be of length 2
+        [idx, key] = keyList
+        if key in ['body', 'title', 'lineNum']
+          changed.push _.extend(newTodos[idx], {issueNumber: originalTodos[idx].issueNumber})
+      when 'A'
+        if index? and not keyList?
+          {kind, lhs, rhs} = item
+          switch kind
+            when 'N'
+              added.push rhs
+            when 'D'
+              deleted.push lhs
+        else
+          [idx, key] = keyList
+          if key in ['shas', 'committers', 'labels']
+            changed.push _.extend(newTodos[idx], {issueNumber: originalTodos[idx].issueNumber})
+  unchanged = _.filter originalTodos, ({issueNumber}) ->
+    not _.findWhere(changed, {issueNumber})? and not _.findWhere(deleted, {issueNumber})?
+  return _.mapValues {changed, unchanged, added, deleted}, _.uniq
 
 module.exports = {getExtension, isTodo, getTodoTitle, isTodoLabel, getTodoLabels,
   isTodoBody, getTodoBody, parseTodos, getChangesFor}

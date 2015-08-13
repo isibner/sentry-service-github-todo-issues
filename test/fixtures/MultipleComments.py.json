@@ -1,0 +1,12 @@
+[
+  {
+    "title": "comment1",
+    "labels": ["todo"],
+    "body": "I am comment 1"
+  },
+  {
+    "title": "comment2",
+    "labels": ["todo", "python"],
+    "body": "I am comment 2. I have two lines."
+  }
+]
